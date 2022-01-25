@@ -1,0 +1,61 @@
+syntax = "proto3";
+option go_package = ".;proto";
+package mergestat.broker.v1;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Broker {
+  rpc GetQuery(GetQueryRequest) returns (GetQueryResponse) {}
+  rpc QueryResultsBatch(QueryResultsBatchRequest) returns (QueryResultsBatchResponse) {}
+}
+
+message GetQueryRequest {
+  string token = 1;
+}
+
+message GetQueryResponse {
+  string query_id = 1;
+  string sql = 2;
+  string params = 3;
+  string options = 4;
+}
+
+message QueryResult {
+    message Schema {
+        repeated string columnNames = 1;
+        repeated string columnTypes = 2;
+    }
+
+    message Row {
+        string row = 1;
+    }
+
+    message Log {
+        string message = 1;
+    }
+
+    message Error {
+        string message = 1;
+    }
+
+    string query_id = 1;
+    oneof result {
+        Schema schema = 2;
+        Row row = 3;
+        Log log = 4;
+        Error error = 5;
+        google.protobuf.Empty done = 6;
+    }
+    int32 order = 7;
+    google.protobuf.Timestamp when = 8;
+}
+
+message QueryResultsBatchRequest {
+  string token = 1;
+  repeated QueryResult results = 2;
+}
+
+message QueryResultsBatchResponse {
+  int32 rows_inserted = 1;
+}
